@@ -1,0 +1,1829 @@
+pico-8 cartridge // http://www.pico-8.com
+version 8
+__lua__
+-- chocobo
+
+-- nina yabanci
+-- fethi isfarca
+
+-- gd17.2
+
+-- main functions
+
+function _init()
+	
+	-- declare variables
+	
+	-- title 0
+	-- gameplay 1
+	-- lose 2
+	
+	gamestate = 0
+	
+	-- frames per second
+	-- at the beginning
+	
+	fps = 0
+	
+	-- maximum possible
+	-- frames per second
+	
+	max_fps = 60
+	
+	-- algorithm
+	
+	init_map()
+	
+	init_player()
+	
+	init_view()
+	init_camera()
+	
+	init_ground()
+	
+	init_hearts_life()
+	
+	init_eggs()
+	init_eggshells()
+	init_chicks()
+	
+end
+
+-- update states
+
+function _update60()
+
+	fpscounter() 
+
+	if (gamestate == 0) then
+	
+		update_title()
+		
+	elseif (gamestate == 1) then
+	
+		update_gameplay()
+		
+	elseif (gamestate == 2) then
+	
+		update_lose()
+		
+	end
+	
+end
+
+function update_title()
+
+	-- algorithm
+
+	press_key_logic()
+	
+end
+
+function update_gameplay()
+
+	-- algorithm
+
+	timer_increment_logic()
+	
+	player_move_logic()
+	player_collision_logic()
+	
+	camera_collision_logic()
+	
+	hearts_spawn_logic()
+	hearts_move_logic()
+	
+	red_eggs_spawn_logic()
+	red_eggs_move_logic()
+	blue_eggs_spawn_logic()
+	blue_eggs_move_logic()
+	green_eggs_spawn_logic()
+	green_eggs_move_logic()
+	
+	eggshells_delete_logic()
+	
+	red_chicks_move_logic()
+	blue_chicks_move_logic()
+	green_chicks_move_logic()
+	
+end
+
+function update_lose()
+
+	-- algorithm
+
+	press_key_logic()
+
+end
+
+-- draw states
+
+function _draw()
+
+	if (gamestate == 0) then
+	
+		draw_title()
+		
+	elseif (gamestate == 1) then
+	
+		draw_gameplay()
+		
+	elseif (gamestate == 2) then
+	
+		draw_lose()
+		
+	end
+	
+end
+
+function draw_title()
+
+	cls()
+	
+	-- algorithm
+	
+	output_chocobo_text()
+	output_chocobo()
+	output_version_number()
+	
+	output_left_button_text()
+	output_left_arrow()
+	
+	output_right_bottom_text()
+	output_right_arrow()
+	
+	output_press_key_text()
+	
+end
+
+function draw_gameplay()
+
+	cls()
+	
+	-- algorithm
+	
+	output_map()
+	
+	output_player()
+	
+	output_camera()
+	
+	output_timer()
+	
+	output_hearts()
+	output_lifes()
+	
+	output_red_eggs()
+	output_blue_eggs()
+	output_green_eggs()
+	
+	output_eggshells()
+	
+	output_red_chicks()
+	output_blue_chicks()
+	output_green_chicks()
+	
+end
+
+function draw_lose()
+		
+	cls()
+	
+	-- algorithm
+	
+	output_lose_text()
+	
+	output_press_key_text()
+	
+end
+
+-- secondary functions
+
+-- functions for _init()
+
+function init_map()
+
+	map_width =
+	{
+		minimum = 0,
+		maximum = 995
+	}
+	
+end
+
+function init_player()
+
+	player =
+	{
+		
+		-- player is spawned in the
+		-- center of the map
+		
+		x = map_width.maximum / 2, 
+		y = 82,
+		height = 4, -- zoom height
+		width = 4, -- zoom width
+		
+		-- 8 pixel * zoomfactor
+		
+		count_pixel_height = 32,
+		count_pixel_width = 32,
+		
+		vx = 5, -- velocity x
+		frames = 
+		{
+			{ 0, 4 }, -- left
+			{ 64, 68 } -- right
+		},
+		frames_index = 1,
+		frame = 1,
+		timer = 0
+		
+	}
+	
+end
+
+function init_view()
+
+	view =
+	{
+		midpoint = 50
+	}
+	
+end
+
+function init_camera()
+
+	cam = 
+	{
+	
+		-- center the camera
+		-- on the player
+		
+		x = player.x - view.midpoint,
+		y = 0
+		
+	}
+	
+end
+
+function init_ground()
+
+	-- start map ground
+	
+	ground =
+	{
+		y = 111
+	}
+	
+end
+
+function init_hearts_life()
+
+	hearts = {}
+	life_counter = 0
+	
+end
+
+function init_eggs()
+
+	eggs =
+	{
+		red = {},
+		blue = {},
+		green = {}
+	}
+	
+end
+
+function init_eggshells()
+
+	eggshells =
+	{
+		left = {},
+		right = {}
+	}
+	
+end
+
+function init_chicks()
+
+	chicks =
+	{
+		red = {},
+		blue = {},
+		green = {}
+	}
+	
+end
+
+-- functions for update_title()
+-- and update_lose()
+
+function press_key_logic()
+
+	-- if the button x was pressed, 
+	-- the game is started.
+	
+	if (btn(5)) then
+	
+		_init()
+	
+		gamestate = 1
+		
+	end
+
+end
+
+-- functions for update_gameplay()
+
+function timer_increment_logic()
+
+	if (fps % max_fps == 0) then
+	
+		player.timer += 1
+		
+	end
+
+end
+
+function player_move_logic()
+
+	-- player move left
+	
+	if (btn(0)) then
+	
+		player.frames_index = 2
+		player.frame += 1
+		
+		player.x -= player.vx
+		cam.x -= player.vx
+	
+	-- player move right
+		
+	elseif (btn(1)) then
+	
+		player.frames_index = 1
+		player.frame += 1
+		
+		player.x += player.vx
+		cam.x += player.vx
+		
+	end
+	
+	player_framereset()
+
+end
+
+function player_collision_logic()
+
+	-- declare variable
+	
+	chocobo =
+	{
+		beak = 3
+	}
+
+	if (player.x <= map_width.minimum) then
+	
+		player.x = map_width.minimum
+		
+	elseif (player.x >= map_width.maximum) then
+	
+		player.x = map_width.maximum - chocobo.beak
+		
+	end
+
+end
+
+function camera_collision_logic()
+
+	if (cam.x <= player.x - view.midpoint) then
+	
+		cam.x = player.x - view.midpoint
+		
+	elseif (cam.x >= player.x - view.midpoint) then
+	
+		cam.x = player.x - view.midpoint
+		
+	end
+
+end
+
+function hearts_spawn_logic()
+
+	-- declare variable
+	
+	random_spawn = 0
+	
+	-- as long as the player has 
+	-- less than 3 lives, life
+	-- can be picked up.
+	
+	if (life_counter < 3) then
+	
+		-- if the random value is 1,
+		-- then a heart is created 
+		-- in scene.
+	
+		random_spawn = flr(rnd(500))
+		
+		if (random_spawn == 1) then
+		
+			add_hearts()
+			
+		end
+		
+	end
+	
+end
+
+function hearts_move_logic()
+	
+		for life in all(hearts) do
+		
+			life.y += life.vy
+			
+			-- delete hearts
+			-- to prevent out of memory
+			
+			delete_hearts(life)
+			
+		end
+
+end
+
+function red_eggs_spawn_logic()
+
+	-- declare variable
+	
+	random =
+	{
+		spawn = 0,
+		maximum = 500
+	}	
+	
+	aggravate()
+	
+	-- if the random value is 1,
+	-- then a red egg is created 
+	-- in scene.
+	
+	random.spawn = flr(rnd(random.maximum))
+		
+	if (random.spawn == 1) then
+		
+		add_red_eggs()
+			
+	end
+
+end
+
+function red_eggs_move_logic()
+
+	for red_egg in all(eggs.red) do
+		
+		red_egg.y += red_egg.vy
+			
+		-- delete red eggs
+		-- to prevent out of memory
+			
+		delete_red_eggs(red_egg)
+			
+	end
+
+end
+
+function blue_eggs_spawn_logic()
+
+ -- declare variable
+	
+	random =
+	{
+		spawn = 0,
+		maximum = 500
+	}	
+	
+	aggravate()
+	
+	-- if the random value is 5,
+	-- then a blue egg is created 
+	-- in scene.
+	
+	random.spawn = flr(rnd(random.maximum))
+		
+	if (random.spawn == 5) then
+		
+		add_blue_eggs()
+			
+	end
+
+end
+
+function blue_eggs_move_logic()
+
+	for blue_egg in all(eggs.blue) do
+		
+		blue_egg.y += blue_egg.vy
+			
+		-- delete blue eggs
+		-- to prevent out of memory
+			
+		delete_blue_eggs(blue_egg)
+			
+	end
+
+end
+
+function green_eggs_spawn_logic()
+
+	-- declare variable
+	
+	random =
+	{
+		spawn = 0,
+		maximum = 500
+	}	
+	
+	aggravate()
+	
+	-- if the random value is 10,
+	-- then a green egg is created 
+	-- in scene.
+	
+	random.spawn = flr(rnd(random.maximum))
+		
+	if (random.spawn == 10) then
+		
+		add_green_eggs()
+			
+	end
+
+end
+
+function green_eggs_move_logic()
+
+	for green_egg in all(eggs.green) do
+		
+		green_egg.y += green_egg.vy
+			
+		-- delete green eggs
+		-- to prevent out of memory
+			
+		delete_green_eggs(green_egg)
+			
+	end
+
+end
+
+function eggshells_delete_logic()
+
+ -- after 1 second, the 
+ -- eggshells are deleted.
+ 
+	if (fps % max_fps == 0) then
+	
+		delete_eggshells()
+		
+	end
+
+end
+
+function red_chicks_move_logic()
+				 
+	for red_chick in all(chicks.red) do
+				
+		red_chick.x -= red_chick.vx
+		
+		red_chick.frame += 1
+		
+		red_chicks_framereset(red_chick)
+		
+		-- delete red chicks
+		-- to prevent out of memory
+		
+		delete_red_chicks(red_chick)
+		
+	end
+
+end
+
+function blue_chicks_move_logic()
+				 
+	for blue_chick in all(chicks.blue) do
+	
+		blue_chick.x -= blue_chick.vx
+	
+		blue_chick.frame += 1
+		
+		blue_chicks_framereset(blue_chick)
+		
+		-- delete blue chicks
+		-- to prevent out of memory
+		
+		delete_blue_chicks(blue_chick)
+		
+	end
+
+end
+
+function green_chicks_move_logic()
+				 
+	for green_chick in all(chicks.green) do
+	
+		green_chick.x -= green_chick.vx
+		
+		green_chick.frame += 1
+		
+		green_chicks_framereset(green_chick)
+		
+		-- delete green chicks
+		-- to prevent out of memory
+		
+		delete_green_chicks(green_chick)
+		
+	end
+
+end
+
+-- functions for draw_title()
+-- draw_lose()
+
+function output_chocobo_text()
+
+	print
+	(
+		"chocobo",
+		50,
+		30,
+		15
+	)
+
+end
+
+function output_chocobo()
+
+	spr
+	(
+		player.frames
+		[player.frames_index]
+		[player.frame],
+		
+		44,
+		50,
+		player.height,
+		player.width
+	)
+
+end
+
+function output_version_number()
+
+	print
+	(
+		"v 1.0",
+		105,
+		120,
+		10
+	)
+
+end
+
+function output_left_button_text()
+
+	print
+	(
+		"left button",
+		0,
+		55,
+		15
+	)
+
+end
+
+function output_left_arrow()
+
+	line -- horizontal line left
+	(
+		10,
+		70,
+		30,
+		70,
+		15
+	)
+	
+	line -- peak right
+	(
+		10,
+		70,
+		15,
+		65,
+		15
+	)
+	
+	line -- peak left
+	(
+		10,
+		70,
+		15,
+		75,
+		15
+	)
+		
+end
+
+function output_right_bottom_text()
+
+	print
+	(
+		"right button",
+		80,
+		55,
+		15
+	)
+
+end
+
+function output_right_arrow()
+
+	line -- horizontal line right
+	(
+		110,
+		70,
+		90,
+		70,
+		15
+	)
+	
+	line -- peak left
+	(
+		110,
+		70,
+		105,
+		65,
+		15
+	)
+	
+	line -- peak right
+	(
+		110,
+		70,
+		105,
+		75,
+		15
+	)
+
+end
+
+function output_press_key_text()
+
+ -- the usual coordinates are 
+ -- taken over in the 
+ -- title-state.
+	
+	if (gamestate == 0) then
+	
+		print
+		(
+			"press x to start",
+			30,
+			100,
+			flr(rnd(16))
+		)
+	
+	-- in the lose-state, 
+	-- the coordinates of the 
+	-- camera are included.
+	
+	elseif (gamestate == 2) then
+	
+		print
+		(
+			"press x to start",
+			cam.x + 30,
+			cam.y + 100,
+			flr(rnd(16))
+		)
+		
+	end
+
+end
+
+function output_lose_text()
+
+	print
+	(
+		"you survived "..
+		player.timer..
+		" seconds!",
+		
+		cam.x + 10,
+		cam.y + 50,
+		15
+	)
+
+end
+
+-- functions for draw_gameplay()
+
+function output_map()
+
+	map
+	(
+		0,
+		9
+	)
+
+end
+
+function output_player()
+
+	spr
+	(
+		player.frames
+		[player.frames_index]
+		[player.frame],
+		
+		player.x,
+		player.y,
+		player.height,
+		player.width
+	)
+
+end
+
+function output_camera()
+
+	camera
+	(
+		cam.x,
+		cam.y
+	)
+
+end
+
+function output_timer()
+
+	print
+	(
+		"timer: "..
+		player.timer..
+		" s",
+		cam.x,
+		cam.y,
+		12
+	) 
+
+end
+
+function output_hearts()
+
+	for life in all(hearts) do
+	
+		spr
+		(
+			life.frame,
+			life.x,
+			life.y
+		)
+		
+	end
+
+end
+
+function output_lifes()
+	
+	-- declare variable
+	
+	coordinate =
+	{
+		x = cam.x + 115,
+		y = cam.y
+	}
+	
+	if (life_counter > 0) then
+	
+		for x = coordinate.x, 
+	    	coordinate.x - (life_counter - 1) * 10, 
+	    	-10 do
+						
+			spr
+			(
+				144,
+				x,
+				coordinate.y
+			)	
+		
+		end
+		
+	end
+
+end
+
+function output_red_eggs()
+
+	for red_egg in all(eggs.red) do
+	
+		spr
+		(
+			red_egg.frame,
+			red_egg.x,
+			red_egg.y,
+			red_egg.zoom_height,
+			red_egg.zoom_width
+		)
+		
+	end
+	
+end
+
+function output_blue_eggs()
+
+	for blue_egg in all(eggs.blue) do
+	
+		spr
+		(
+			blue_egg.frame,
+			blue_egg.x,
+			blue_egg.y,
+			blue_egg.zoom_height,
+			blue_egg.zoom_width
+		)
+		
+	end
+	
+end
+
+function output_green_eggs()
+
+	for green_egg in all(eggs.green) do
+	
+		spr
+		(
+			green_egg.frame,
+			green_egg.x,
+			green_egg.y,
+			green_egg.zoom_height,
+			green_egg.zoom_width
+		)
+		
+	end
+	
+end
+
+function output_eggshells()
+
+	for left_eggshell in all(eggshells.left) do
+	
+		spr -- left eggshell
+		(
+			left_eggshell.frame,
+			left_eggshell.x,
+			left_eggshell.y,
+			left_eggshell.zoom_height,
+			left_eggshell.zoom_width
+		)
+	
+		for right_eggshell in all(eggshells.right) do
+			
+			spr -- right eggshell
+			(
+				right_eggshell.frame,
+				right_eggshell.x,
+				right_eggshell.y,
+				right_eggshell.zoom_height,
+				right_eggshell.zoom_width
+			)
+			
+		end
+		
+	end
+
+end
+
+function output_red_chicks()
+
+	for red_chick in all(chicks.red) do
+	
+		spr
+		(
+			red_chick.frames
+			[red_chick.frames_index]
+			[red_chick.frame],
+			
+			red_chick.x,
+			red_chick.y,
+			red_chick.zoom_height,
+			red_chick.zoom_width
+		)
+		
+	end
+	
+end
+
+function output_blue_chicks()
+
+	for blue_chick in all(chicks.blue) do
+	
+		spr
+		(
+			blue_chick.frames
+			[blue_chick.frames_index]
+			[blue_chick.frame],
+			
+			blue_chick.x,
+			blue_chick.y,
+			blue_chick.zoom_height,
+			blue_chick.zoom_width
+		)
+		
+	end
+	
+end
+
+function output_green_chicks()
+
+	for green_chick in all(chicks.green) do
+	
+		spr
+		(
+			green_chick.frames
+			[green_chick.frames_index]
+			[green_chick.frame],
+			
+			green_chick.x,
+			green_chick.y,
+			green_chick.zoom_height,
+			green_chick.zoom_width
+		)
+		
+	end
+	
+end
+
+-- functions for add objects
+
+function add_hearts()
+
+	-- declare variable
+	
+	local h = 
+	{
+		
+		-- a random integer
+		-- between -50 and 50
+		
+		x = player.x + flr(rnd(101) - 50),
+		y = 0,
+		vy = 1, -- velocity y
+		height = 7,
+		frame = 144
+		
+	} 
+	
+	add(hearts, h)
+
+end
+
+function add_red_eggs()
+
+	-- declare variable
+	
+	local r_e = 
+	{
+		
+		-- a random integer
+		-- between -50 and 50
+		
+		x = player.x + flr(rnd(101) - 50),
+		y = 0,
+		vy = 0.5, -- velocity y
+		height = 14,
+		frame = 146,
+		zoom_height = 2,
+		zoom_width = 2
+		
+	} 
+	
+	add(eggs.red, r_e)
+
+end
+
+function add_blue_eggs()
+
+	-- declare variable
+	
+	local b_e = 
+	{
+		
+		-- a random integer
+		-- between -50 and 50
+		
+		x = player.x + flr(rnd(101) - 50),
+		y = 0,
+		vy = 1, -- velocity y
+		height = 14,
+		frame = 148,
+		zoom_height = 2,
+		zoom_width = 2
+		
+	} 
+	
+	add(eggs.blue, b_e)
+
+end
+
+function add_green_eggs()
+
+	-- declare variable
+	
+	local g_e = 
+	{
+		
+		-- a random integer
+		-- between -50 and 50
+		
+		x = player.x + flr(rnd(101) - 50),
+		y = 0,
+		vy = 2, -- velocity y
+		height = 14,
+		frame = 150,
+		zoom_height = 2,
+		zoom_width = 2
+		
+	} 
+	
+	add(eggs.green, g_e)
+
+end
+
+function add_eggshells(_x, _y)
+
+	-- declare variables
+	
+	distance = 10
+	
+	local l_e_s = -- left eggshell
+	{
+		x = _x - distance,
+		y = _y,
+		frame = 153,
+		zoom_height = 2,
+		zoom_width = 2
+	}  
+	
+	local r_e_s = -- right eggshell
+	{
+		x = _x + distance,
+		y = _y,
+		frame = 156,
+		zoom_height = 2,
+		zoom_width = 2
+	} 
+	
+	add(eggshells.left, l_e_s)
+	add(eggshells.right, r_e_s)
+
+end
+
+function add_red_chicks(_x, _y)
+	
+	-- declare variable
+	
+	local r_c =
+	{
+		x = _x,
+		y = _y,
+		zoom_height = 2,
+		zoom_width = 2,
+		vx = 1, -- velocity x
+		frames = 
+		{
+			{ 105, 108 } -- left
+		},
+		frames_index = 1,
+		frame = 1
+	}
+	
+	add(chicks.red, r_c)
+
+end
+
+function add_blue_chicks(_x, _y)
+	
+	-- declare variable
+	
+	local b_c =
+	{
+		x = _x,
+		y = _y,
+		zoom_height = 2,
+		zoom_width = 2,
+		vx = 1, -- velocity x
+		frames = 
+		{
+			{ 57, 60 } -- left
+		},
+		frames_index = 1,
+		frame = 1
+	}
+	
+	add(chicks.blue, b_c)
+
+end
+
+function add_green_chicks(_x, _y)
+	
+	-- declare variable
+	
+	local g_c =
+	{
+		x = _x,
+		y = _y,
+		zoom_height = 2,
+		zoom_width = 2,
+		vx = 1, -- velocity x
+		frames = 
+		{
+			{ 9, 12 } -- left
+		},
+		frames_index = 1,
+		frame = 1
+	}
+	
+	add(chicks.green, g_c)
+
+end
+
+-- functions for delete objects
+
+function delete_hearts(_life)
+	
+	-- if it hits the ground,
+	-- then the heart is erased.
+	
+	if (_life.y + _life.height >= ground.y) then
+	
+		del(hearts, _life)
+		
+	-- when it hits the chocobo,
+	-- life is increased and the
+	-- heart is erased.
+		
+	elseif (_life.x >= player.x and
+									_life.x <= player.x + player.count_pixel_width and
+									_life.y >= player.y and
+									_life.y <= player.y + player.count_pixel_height) then
+			
+		life_counter += 1
+		
+		del(hearts, _life)
+		
+	end													
+
+end
+
+function delete_red_eggs(_red_egg)
+	
+	-- if it hits the ground,
+	-- then the red egg is erased.
+	
+	if (_red_egg.y + _red_egg.height >= ground.y) then
+		
+		del(eggs.red, _red_egg)
+		
+		add_eggshells(_red_egg.x, _red_egg.y)
+		
+		add_red_chicks(_red_egg.x, _red_egg.y)
+		
+	-- when the chocobo gets hit,
+	-- the number of lives is
+	-- checked.
+		
+	elseif (_red_egg.x >= player.x and
+									_red_egg.x <= player.x + player.count_pixel_width and
+									_red_egg.y >= player.y and
+									_red_egg.y <= player.y + player.count_pixel_height) then
+		
+		life_counter_decrement()
+		
+		-- after the life_counter 
+		-- condition, the red egg 
+		-- is deleted.
+		
+		del(eggs.red, _red_egg)
+		
+	end													
+
+end
+
+function delete_blue_eggs(_blue_egg)
+	
+	-- if it hits the ground,
+	-- then the blue egg is erased.
+	
+	if (_blue_egg.y + _blue_egg.height >= ground.y) then
+		
+		del(eggs.blue, _blue_egg)
+		
+		add_eggshells(_blue_egg.x, _blue_egg.y)
+		
+		add_blue_chicks(_blue_egg.x, _blue_egg.y)
+		
+	-- when the chocobo gets hit,
+	-- the number of lives is
+	-- checked.
+		
+	elseif (_blue_egg.x >= player.x and
+									_blue_egg.x <= player.x + player.count_pixel_width and
+									_blue_egg.y >= player.y and
+									_blue_egg.y <= player.y + player.count_pixel_height) then
+		
+		life_counter_decrement()
+		
+		-- after the life_counter 
+		-- condition, the red egg 
+		-- is deleted.
+		
+		del(eggs.blue, _blue_egg)
+		
+	end													
+
+end
+
+function delete_green_eggs(_green_egg)
+	
+	-- if it hits the ground,
+	-- then the green egg is erased.
+	
+	if (_green_egg.y + _green_egg.height >= ground.y) then
+		
+		del(eggs.green, _green_egg)
+		
+		add_eggshells(_green_egg.x, _green_egg.y)
+		
+		add_green_chicks(_green_egg.x, _green_egg.y)
+		
+	-- when the chocobo gets hit,
+	-- the number of lives is
+	-- checked.
+		
+	elseif (_green_egg.x >= player.x and
+									_green_egg.x <= player.x + player.count_pixel_width and
+									_green_egg.y >= player.y and
+									_green_egg.y <= player.y + player.count_pixel_height) then
+		
+		life_counter_decrement()
+		
+		-- after the life_counter 
+		-- condition, the green egg 
+		-- is deleted.
+		
+		del(eggs.green, _green_egg)
+		
+	end													
+
+end
+
+function delete_eggshells()
+
+	for left in all(eggshells.left) do
+	
+		del(eggshells.left, left)
+	
+		for right in all(eggshells.right) do
+			
+			del(eggshells.right, right)
+			
+		end
+		
+	end
+	
+end
+
+function delete_red_chicks(_red_chick)
+
+	if (_red_chick.x <= 0) then
+	
+		del(chicks.red, _red_chick)
+		
+	end
+
+end
+
+function delete_blue_chicks(_blue_chick)
+
+	if (_blue_chick.x <= 0) then
+	
+		del(chicks.blue, _blue_chick)
+		
+	end
+	
+end
+
+function delete_green_chicks(_green_chick)
+
+	if (_green_chick.x <= 0) then
+	
+		del(chicks.green, _green_chick)
+		
+	end
+	
+end
+
+-- functions for frameresets
+
+function player_framereset()
+
+	if (player.frame > #player.frames[player.frames_index]) then
+	
+		player.frame = 1
+		
+	end
+		
+end
+
+function red_chicks_framereset(_red_chick)
+
+	if (_red_chick.frame > #_red_chick.frames[_red_chick.frames_index]) then
+	
+		_red_chick.frame = 1
+		
+	end
+
+end
+
+function blue_chicks_framereset(_blue_chick)
+
+	if (_blue_chick.frame > #_blue_chick.frames[_blue_chick.frames_index]) then
+	
+		_blue_chick.frame = 1
+		
+	end
+
+end
+
+function green_chicks_framereset(_green_chick)
+
+	if (_green_chick.frame > #_green_chick.frames[_green_chick.frames_index]) then
+	
+		_green_chick.frame = 1
+		
+	end
+
+end
+
+-- other auxiliary functions
+
+function fpscounter()
+
+	fps += 1
+	
+	if (fps % max_fps == 0) then
+	
+		fps = 0
+		
+	end
+
+end
+
+function aggravate()	
+	
+	-- to longer the player
+	-- survives, the higher the
+	-- likelihood that the eggs
+	-- will appear in the scene.
+	
+	if (player.timer < 60) then
+	
+		random.maximum = 200
+		
+	elseif (player.timer >= 60 and
+									player.timer < 90) then
+									
+		random.maximum = 100
+		
+	elseif (player.timer >= 90) then
+	
+		random.maximum = 50
+		
+	end
+	
+	return random.maximum
+
+end
+
+function life_counter_decrement()
+
+	-- if the chocobo still has
+	-- life, then 1 deducted,
+	-- otherwise the player 
+	-- has lost.
+		
+	if (life_counter > 0) then
+		
+		life_counter -= 1
+			
+	elseif (life_counter <= 0) then	
+		
+		gamestate = 2
+			
+	end
+
+end
+__gfx__
+000000000000000000aa900000000000000000000000000000aa9000000000000000000000f444f0000000000000000000f444f0000000000000000000000000
+000000000000000000aa999aa0000000000000000000000000aa999aa0000000000000000f44f44400000000000000000f44f444000000000000000000000000
+0000000000000000000a99aaa99000000000000000000000000a99aaa99000000000000004b44b4f000000000000000004b44b4f000000000000000000000000
+00000000000000aaaa9a9aaaaa9a000000000000000000aaaa9a9aaaaa9a0000000000000b30bbbb00000000000000000b30bbbb000000000000000000000000
+00000000000000aa99aaaaaaaaaa000000000000000000aa99aaaaaaaaaa0000000000000973bbbb30000000000000000973bbbb300000000000000000000000
+0000000000000000aaaaaaa77aa000000000000000000000aaaaaaa77aa0000000000000f930bbb3bb003b0000000000f930bbb3bb003b000000000000000000
+000000000000000aaaaaaa7777aa0000000000000000000aaaaaaa7777aa00000000000099bbbb3b333bbb300000000099bbbb3b333bbb300000000000000000
+00000000000000aaa9aaa7770ca9000000000000000000aaa9aaa7770ca9000000000000003bbbbbb3bb3bb300000000003bbbbbb3bb3bb30000000000000000
+0000000000000aaa90aaa770c79990000000000000000aaa90aaa770c79990000000000000bb3bbbb3bbb33b0000000000bb3bbbb3bbb33b0000000000000000
+0000000000000aa00aaaa77cc79999000000000000000aa00aaaa77cc79999000000000000b3b3bbb33b3bb30000000000b3b3bbb33b3bb30000000000000000
+0000000000000000099aaa77c99999000000000000000000099aaa77c999990000000000003bbb3bbb3bb00000000000003bbb3bbb3bb0000000000000000000
+0000099aa00000009a9aaaaaa99999900000099aa00000009a9aaaaaa999999000000000000bbbb3333bb00000000000000bbbb3333bb0000000000000000000
+000099aaa900009999aaaaaaa99999a9000099aaa900009999aaaaaaa99999a9000000000000bbbbbbbb3000000000000000bbbbbbbb30000000000000000000
+00009aaaaa990a9aa9aaaaaa9999999900009aaaaa990a9aa9aaaaaa999999990000000007493b33bb9447000000000000003b33b30000000000000000000000
+0009aaaaaaaaa9aaaa9aa999a00000000009aaaaaaaaa9aaaa9aa999a00000000000000000444440094444000000000000077944900000000000000000000000
+009aa9aaaaaaaaaaaaaa9aaa90000000009aa9aaaaaaaaaaaaaa9aaa900000000000000000799470744900000000000000007449470000000000000000000000
+00aa9aaaaa99aaaaaaaaaaaaa900000000aa9aaaaa99aaaaaaaaaaaaa90000000000000000000000000000000000000000000000000000000000000000000000
+0aa9aaaaa9aaaaaaaaaaaaa9a90000000aa9aaaaa9aaaaaaaaaaaaa9a90000000000000000000000000000000000000000000000000000000000000000000000
+00aaa9aa9aaaaaaa9aaaaaa9a900000000aaa9aa9aaaaaaa9aaaaaa9a90000000000000000000000000000000000000000000000000000000000000000000000
+0aaa9a9aa9aaaaa9aaaaa9a9aa0000000aaa9a9aa9aaaaa9aaaaa9a9aa0000000000000000000000000000000000000000000000000000000000000000000000
+0999aaaaaa9aaa99aaaaaaaa9a0000000999aaaaaa9aaa99aaaaaaaa9a0000000000000000000000000000000000000000000000000000000000000000000000
+00aaaaaaaaa999aaaaaaa9aaa000000000aaaaaaaaa999aaaaaaa9aaa00000000000000000000000000000000000000000000000000000000000000000000000
+0a9aa99aaaaaaaaaaaaaaa9a000000000a9aa99aaaaaaaaaaaaaaa9a000000000000000000000000000000000000000000000000000000000000000000000000
+0909900aaaaaaaaaaaaaaaa0000000000909900aaaaaaaaaaaaaaaa0000000000000000000000000000000000000000000000000000000000000000000000000
+00000000aaaaaaaa9aaaaa000000000000000000aaaaaaaa9aaaaa00000000000000000000f444f0000000000000000000f444f0000000000000000000000000
+0000000099aaaaaaa9aaa900000000000000000099aaaaaaa9aaa90000000000000000000f44f44400000000000000000f44f444000000000000000000000000
+00000007404499aaaa9994000477000000000000000044aaaa999000000000000000000004c44c4f000000000000000004c44c4f000000000000000000000000
+0000000444440000000094444447000000000000000094400000000000000000000000000c10cccc00000000000000000c10cccc000000000000000000000000
+0000000049444000000094444940000000000000000044444470000000000000000000000971cccc10000000000000000971cccc100000000000000000000000
+000000009444447000000444990000000000000000079499997700000000000000000000f910ccc1cc001c0000000000f910ccc1cc001c000000000000000000
+00000000000000000000000000000000000000000000944477000000000000000000000099cccc1c111ccc100000000099cccc1c111cccc00000000000000000
+000000000000000000000000000000000000000000000000000000000000000000000000001cccccc1cc1cc100000000001cccccc1cc1cc10000000000000000
+000000000009aa000000000000000000000000000009aa0000000000000000000000000000cc1cccc1ccc11c0000000000cc1cccc1ccc11c0000000000000000
+0000000aa999aa0000000000000000000000000aa999aa0000000000000000000000000000c1c1ccc11c1cc10000000000c1c1ccc11c1cc10000000000000000
+0000099aaa99a00000000000000000000000099aaa99a000000000000000000000000000001ccc1ccc1cc00000000000001ccc11cc1cc0000000000000000000
+0000a9aaaaa9a9aaaa000000000000000000a9aaaaa9a9aaaa0000000000000000000000000cccc1111cc00000000000000cccc1111cc0000000000000000000
+0000aaaaaaaaaa99aa000000000000000000aaaaaaaaaa99aa00000000000000000000000000cccccccc1000000000000000cccccccc10000000000000000000
+00000aa77aaaaaaa000000000000000000000aa77aaaaaaa00000000000000000000000007491c11cc9447000000000000001c11c10000000000000000000000
+0000aa7777aaaaaaa0000000000000000000aa7777aaaaaaa0000000000000000000000000444440094444000000000000077944900000000000000000000000
+00009ac0777aaa9aaa0000000000000000009ac0777aaa9aaa000000000000000000000000799470744900000000000000007449470000000000000000000000
+0009997c077aaa09aaa00000000000000009997c077aaa09aaa00000000000000000000000000000000000000000000000000000000000000000000000000000
+0099997cc77aaaa00aa00000000000000099997cc77aaaa00aa00000000000000000000000000000000000000000000000000000000000000000000000000000
+0099999c77aaa99000000000000000000099999c77aaa99000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0999999aaaaaa9a90000000aa99000000999999aaaaaa9a90000000aa99000000000000000000000000000000000000000000000000000000000000000000000
+9a99999aaaaaaa999900009aaa9900009a99999aaaaaaa999900009aaa9900000000000000000000000000000000000000000000000000000000000000000000
+99999999aaaaaa9aa9a099aaaaa9000099999999aaaaaa9aa9a099aaaaa900000000000000000000000000000000000000000000000000000000000000000000
+0000000a999aa9aaaa9aaaaaaaaa90000000000a999aa9aaaa9aaaaaaaaa00000000000000000000000000000000000000000000000000000000000000000000
+00000009aaa9aaaaaaaaaaaaaa9aa90000000009aaa9aaaaaaaaaaaaaa9a90000000000000000000000000000000000000000000000000000000000000000000
+0000009aaaaaaaaaaaaa99aaaaa9aa000000009aaaaaaaaaaaaa99aaaaa9a0000000000000f444f0000000000000000000f444f0000000000000000000000000
+0000009a9aaaaaaaaaaaaa9aaaaa9aa00000009a9aaaaaaaaaaaaa9aaaaaaa00000000000f44f44400000000000000000f44f444000000000000000000000000
+0000009a9aaaaaa9aaaaaaa9aa9aaa000000009a9aaaaaa9aaaaaaa9aa9aa0000000000004e44e4f000000000000000004e44e4f000000000000000000000000
+000000aa9a9aaaaa9aaaaa9aa9a9aaa0000000aa9a9aaaaa9aaaaa9aa9a9aa00000000000e80eeee00000000000000000e80eeee000000000000000000000000
+000000a9aaaaaaaa99aaa9aaaaaa9990000000a9aaaaaaaa99aaa9aaaaaa9900000000000978eeee80000000000000000978eeee800000000000000000000000
+0000000aaa9aaaaaaa999aaaaaaaaa000000000aaa9aaaaaaa999aaaaaaaa00000000000f980eee8ee008e0000000000f980eee8ee008e000000000000000000
+00000000a9aaaaaaaaaaaaaaa99aa9a000000000a9aaaaaaaaaaaaaaa99a9a000000000099eeee8e888eee800000000099eeee8e888eeee00000000000000000
+000000000aaaaaaaaaaaaaaaa0099090000000000aaaaaaaaaaaaaaaa009090000000000008eeeeee8ee8ee800000000008eeeeee8ee8ee80000000000000000
+0000000000aaaaa9aaaaaaaa000000000000000000aaaaa9aaaaaaaa000000000000000000ee8eeee8eee88e0000000000ee8eeee8eee88e0000000000000000
+00000000009aaa9aaaaaaa990000000000000000009aaa9aaaaaaa99000000000000000000e8e8eee88e8ee80000000000e8e8eee88e8ee80000000000000000
+00007740004999aaaa9944047000000000000000000999aaaa4400000000000000000000008eee8eee8ee00000000000008eee88ee8ee0000000000000000000
+000074444449000000004444400000000000000000000000044900000000000000000000000eeee8888ee00000000000000eeee8888ee0000000000000000000
+0000049444490000000444940000000000000000000007444444000000000000000000000000eeeeeeee8000000000000000eeeeeeee80000000000000000000
+00000009944400000074444490000000000000000000077999949700000000000000000007498e88ee9447000000000000008e88e80000000000000000000000
+00000000944440000744449900000000000000000000007744449700000000000000000000444440094444000000000000077944900000000000000000000000
+00000000009470000774490000000000000000000000000774449000000000000000000000799470744900000000000000007449470000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000007c000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007c7c007c007c007c7c7c7c0000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+08800880000000000000088fff00000000000011fff0000000000033fff000000000000000000000000000000000000000000000000000000000000000000000
+88888e88000000000000888ffff0000000000111ffff000000000333ffff00000000000000000ffff660000000000000000f44444ff000000000000000000000
+888888e800000000000f88ffff7800000000f11ffff710000000f33ffff730000000000000044ffff6fff000000000000fff777777ff1c000000000000000000
+888888e800000000008ffffff88780000001ffffff1171000003ffffff33730000000000004446f666ffff0000000000fff7f444f77f44000000000000000000
+88888e8800000000088ffffff8887f000011ffffff1117f00033ffffff3337f0000000000444f666f6fffff00000000000ffff4ffff446400000000000000000
+08888880000000000fff88ffff887f0000fff11ffff117f000fff33ffff337f0000000000ffffffff6400000000000000000ffff66f466400000000000000000
+00888800000000000ff8888fffff780000ff1111fffff71000ff3333fffff730000000000fffffff4664000000000000000ffffff66664400000000000000000
+00088000000000000f888888fffff80000f111111fffff1000f333333fffff30000000000fff6fff4444fff00000000000fff44ffff644f00000000000000000
+00000000000000000f888888ffffff0000f111111ffffff000f333333ffffff0000000000f446ffff44fff00000000000fff4444fff6fff00000000000000000
+00000000000000000ff8888fffffff0000ff1111fffffff000ff3333fffffff0000000000446666ffffff0000000000000004664fffffff00000000000000000
+00000000000000000fff88fffff8880000fff11fffff111000fff33fffff33300000000004664f66ffff0000000000000000046ffffffff00000000000000000
+000000000000000000ffffffff888000000ffffffff11100000ffffffff333000000000004644ffff4ffff00000000000fffff6f666f44400000000000000000
+000000000000000000fff88fff888000000fff11fff11100000fff33fff33300000000000044f77f444f7fff0000000000ffff666f6444000000000000000000
+0000000000000000000f8888fff800000000f1111fff10000000f3333fff300000000000000fff777777fff000000000000fff6ffff440000000000000000000
+000000000000000000000888ff000000000000111ff00000000000333ff000000000000000000ff44444f000000000000000066ffff000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00033000ff4676f44f4ff4ffb00b0bb000000555566665003bb003bb000000000000000000000000000000000000000000000000000000000000000000000000
+0003b0bb4ff6776fffffffff0b00b00b000065555555555003b003bb000000000000000000000000000000000000000000000000000000000000000000000000
+3303b0b0ff67766ffff4fff4b00b0b0b000665555555555503bb03bb000000000000000000000000000000000000000000000000000000000000000000000000
+0303b0b046776f4ff4fff4ffbb0b00b00006555565555566003b03bb000000000000000000000000000000000000000000000000000000000000000000000000
+03bbb03077764fffffffffffb0b00b0b0006555565555556003bbbbb000000000000000000000000000000000000000000000000000000000000000000000000
+0003b330676ffff4fff4ff4fbbb0b0b0000555556555555600033bbb000000000000000000000000000000000000000000000000000000000000000000000000
+0003b000f664ff4f4fff44ff0b0b00b00005555556555555000003bb000000000000000000000000000000000000000000000000000000000000000000000000
+0003b0004fff4fffff4fff4fbbbbbbbb00055555555555550000033b000000000000000000000000000000000000000000000000000000000000000000000000
+000a70000000000000000000000000000000000000000000bb300000000000000000000000000000000000000000000000000000000000000000000000000000
+000a70000000000000000000000000000000000000000000bb3000b3000000000000000000000000000000000000000000000000000000000000000000000000
+00aa7a000000000000000000000000000000000000000000bb300bb3000000000000000000000000000000000000000000000000000000000000000000000000
+99aaa7aa0000000000000000000000000000000088a00000bb30bb30000000000000000000000000000000000000000000000000000000000000000000000000
+09aaaa700000000000000000000000000000003338800000bbbbb300000000000000000000000000000000000000000000000000000000000000000000000000
+009a9a000000000000000000000000000000033b33800000bb333000000000000000000000000000000000000000000000000000000000000000000000000000
+0a9009a0000000000000000000000000000003bbb3300000bb300000000000000000000000000000000000000000000000000000000000000000000000000000
+a900009a00000000000000000000000000003bbbbb300000bb300000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__gff__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__map__
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c7c700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c7c700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c700c7c7c7c7c7c700c7d800000000
+000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c7c7c7c7c70000c7c7d0d700000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c700c70000d0d8c7c7c7c7c7c7c7c7
+0000000000c7c7c700000000000000d00000c70000c7c7c7000000000000c7c7c700c70000000000000000000000000000c7c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c700000000000000000000c7c7c7c7
+0000000000c7c7c7c700d0c7c7c700c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7d0c7c7c7c7c7c7c700d0c7c7c7c7c7c7c7c700c70000000000d8d8000000000000000000000000000000000000000000000000000000000000000000000000000000000000c70000000000000000000000000000000000000000c700d00000
+00d00000000000c700000000000000c7c7c7c7c7c7c7c7c7d0c7c7c7d0c700c7d8c7c700000000000000000000c7c7d0c7c700c7c700000000d8d8d80000000000000000000000000000c7d00000000000c7c7c7c7c7c7d0c7c70000000000c7c700c7c7c7c7c7c7c7c7c7c7c7c700c7c700000000000000000000c700000000
+000000000000c7d00000c7c7c7c7c7c700c7c7c7c7c7c7c7c7c7c7c7c70000c7c7c700c70000d00000000000c7c7000000c7c7c7c7000000c7c7c7c7c7c7c7d0c7c7c7c70000000000000000c7000000000000c7c7c7c7c7c7000000c7d1c700c7c7c700c7c7c7c7d0c700c700c7c700c7000000d00000000000c70000000000
+000000d0c7c7c7c700c7c700d0c7c700c7c7c7c7d0c7c7c7c7c7c7c700c700c7c700c70000000000000000c7000000c7c70000c7000000c7d000d800c7c7c7d80000c700c7c700c70000c7c7c70000000000c7c700c70000000000c700c700c7c7d0c7c7c7c700c7c700000000c7d0c7c7000000000000000000d00000000000
+00000000c7c700c7000000c7c7000000c700c7c7c7c7c7c7c7c7c7c7c7c700c7c700c7c7c7000000d0c7c7000000c700c7c7c70000000000c70000c700c70000c7c7c7c700000000000000c700000000c7d000000000c7000000000000d00000c7c7c7c7c7c7000000c7c7c700c70000c700000000000000c7c7c70000000000
+d000000000c7d0c7000000000000c7c7c70000c7c7c7c7c7c7c7c7c7c7000000c700000000c7000000c7000000c7c7c7c7c7c70000000000c70000000000000000c7c7c700c7c7c7000000c700000000c70000000000c70000d00000c7000000000000c70000d00000c7000000000000c7000000000000c7c700000000000000
+0000000000c700c7c700d0c70000000000c7c7c7c7c7c7c7c7c7c7c7c700000000c70000c7c70000000000c7c7c7c7c7c7c7c700c700000000c700000000000000000000000000000000d900000000c7c70000000000c700000000c7c7000000000000c7c7000000000000000000d0d1000000000000c7c70000000000000000
+0000d000c7c70000c70000c700c700000000d0c7c7c7c7c7c7c7d0c7c7000000d0c7c7c700000000000000000000c7c7c7c7c700c7c700000000c7000000000000000000000000d000d9d9c700c7c7c7000000000000c7000000c7c700000000000000c7c7c7000000000000c70000c70000000000d000000000000000000000
+00c700c7c7c70000c70000000000c7c70000c700c7c7c7c7c7c7c7c70000000000c7c7c70000000000c70000c7c7c7c7c7c700000000d000000000c7000000d000000000000000000000c7c7000000000000000000c7c7000000c700000000d1000000c7c7c7000000000000c7c7c7c700000000000000000000000000000000
+c7c700c7c7c7c7c7c700d000000000c7c7c700c7d000c7c700c7000000000000000000c70000000000c700c7c7c7d0c7c7c7c7c7000000000000000000000000000000000000000000c7c7c700000000000000d1c7c7c7d00000c7c700000000000000c7c7c7d000000000c7c7c7c700000000000000000000000000000000d0
+c7c7c7c7c7c7d0c7c700000000000000c7c7c7c7d0c7000000d0000000000000000000c700d0000000c7c7c7c7c7c7c7c70000c7d000000000000000c7d000000000000000000000d0c7c7c7d0000000000000d0c7000000c7c7c7c7c700000000000000000000c700c7c7c7c700c7000000000000000000000000d800000000
+c7c7d0c7c7d0c7c7c7d00000d000c7c7d000c700c70000d000000000d20000d0000000c70000000000d0c7c70000c7d0c70000c700000000d000000000c70000000000d0000000000000000000000000000000000000000000d000c7c7c7000000000000d000000000d0c7c70000d0000000d000000000d8d8d8d8d8d8000000
+00d0c7c7c7c7c7c7c70000000000000000c700c7000000000000000000000000000000d00000000000c7c7c7c7c7c7c7c700c7c7000000000000d0c7c7c70000000000000000d0000000000000d00000000000000000000000000000000000d000000000000000000000000000000000000000000000e7d0d8d8d8d8d8d80000
+00c7c7c7c7c7c7d0c700000000d000000000c7c7d00000d000000000d00000000000c7c70000000000c7c7c7c7c7c7c7c700c7d0c7c700000000000000d000000000000000000000000000000000000000000000000000000000d0d1d10000000000000000000000000000000000000000000000c7c7d8c7c7c7c7d8d8d80000
+00c700c7d0c7c7c7c7d0000000000000c7d0000000c7000000c700c700000000c7d0000000d0000000c7c7c7c7d0c7c7c700c7c700c700d0000000000000c7000000d00000000000d0000000d0000000d00000000000d0000000000000000000000000000000000000d0000000000000000000d0c7c7c7c7c7c7c7c7d8d80000
+d4d5c7c7c7c7c7c70000000000000000c7000000c700c7000000000000000000c700000000000000d0c7c7c7c7c7c7c7c700c7c7c7c70000000000d0000000c70000000000000000000000000000000000000000000000000000000000000000d000000000000000000000000000d0000000c7c7c7c7c7c7c7c7c7d0d80000c3
+c6d6c9c9c9c9c9c9c9c7c7c7c7c7c7c7c7000000c7c7000000c70000d4d5000000000000c70000000000c70000c7c7c7c7c7c7c7c700c7c700000000000000000000000000000000c7c7c7c7c7c7c7c7c7c7c7d4d5c700000000000000000000000000000000c7c700000000c700c700c7c7c7c7c7c7c7c7c7c7c700c7d4c5c5
+c4c5d7d7c3c3c9c9c9c7c7c3c7c7c7c7c70000c700000000000000c3c6d6000000c70000c3000000c7c7c3c7c7c7c7c7c7c7c7c7c7c7c7c4c5c7c70000000000c3000000c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c6d6c4c50000000000c700000000000000c7c70000c300000000c7c7c7c7c7c7c7c7c7c7c7c7c7c700c7c6c5c5
+c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2
+c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c1c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c1c2
+c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8
+c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9d8d8d8d8c8c8c8d8d8d8d8d8d8d8d8d8c7c7c7c7c7c7c7c7d8c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c8d8d8d8d8d8d8d8d8d8d8c8c8c8c8c8c8d8d8d8d8c7c7c7d8c7c7c7c7c7c7c7c7d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8d8
+c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c7c7c7c7c7c7c7c7c7c7c7c8c8c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c8c8c8c8c8c8c80e0e0e0e0ec7c7c7c7c7c7c7c7c7c7c7d8d8d8d80e0e0e0e0e0ec7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7
+000000000000000000000000c900c9c9c9c9c9c9c9c9c9c9c900c9c900c9c9c900000000000000000000000000000000c7c7c700c700c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c70000c7c7c7c700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000c700000000000000000000000000000000c7c7c7c7c7c7c7c700c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c70000c7c7c7c7c7c7c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c7c700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000c6000000000000c7c700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__music__
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+00 41424344
+
