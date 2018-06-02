@@ -26,7 +26,7 @@ Created in a week at a game jam! It's raining eggs and you have to protect yours
 
 ## Update history
 
-* -
+* --
 
 ## Note
 
@@ -37,4 +37,5 @@ We would be very happy about feedbacks, suggestions and bug reports!
 ## Links
 
 [Cover by loloasuna](https://loloasuna.deviantart.com/)
+
 [itch.io](https://divinus41.itch.io/chocobo)
