@@ -18,7 +18,7 @@ Created in a week at a game jam! It's raining eggs and you have to protect yours
 
 ### Artist
 
-* [Nina Yabanci](https://nin-ya.deviantart.com/)
+* [Nina Yabanci](https://www.artstation.com/ninya92)
 
 ### Programmer
 
